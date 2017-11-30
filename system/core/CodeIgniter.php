@@ -401,13 +401,14 @@ if ( ! is_php('5.4'))
 	$e404 = FALSE;
 	$class = ucfirst($RTR->class);
 	$method = $RTR->method;
-
 	if (empty($class) OR ! file_exists(APPPATH.'controllers/'.$RTR->directory.$class.'.php'))
 	{
 		$e404 = TRUE;
 	}
 	else
 	{
+
+
 		require_once(APPPATH.'controllers/'.$RTR->directory.$class.'.php');
 
 		if ( ! class_exists($class, FALSE) OR $method[0] === '_' OR method_exists('CI_Controller', $method))
@@ -416,7 +417,10 @@ if ( ! is_php('5.4'))
 		}
 		elseif (method_exists($class, '_remap'))
 		{
+
+
 			$params = array($method, array_slice($URI->rsegments, 2));
+
 			$method = '_remap';
 		}
 		elseif ( ! method_exists($class, $method))
@@ -478,6 +482,7 @@ if ( ! is_php('5.4'))
 			}
 		}
 
+
 		// Did we reset the $e404 flag? If so, set the rsegments, starting from index 1
 		if ( ! $e404)
 		{
@@ -514,7 +519,6 @@ if ( ! is_php('5.4'))
  */
 	// Mark a start point so we can benchmark the controller
 	$BM->mark('controller_execution_time_( '.$class.' / '.$method.' )_start');
-
 	$CI = new $class();
 
 /*
@@ -529,6 +533,7 @@ if ( ! is_php('5.4'))
  *  Call the requested method
  * ------------------------------------------------------
  */
+
 	call_user_func_array(array(&$CI, $method), $params);
 
 	// Mark a benchmark end point
