@@ -86,6 +86,8 @@ class MY_Controller extends CI_Controller {
             ->set_header('Pragma: no-cache')
             ->set_header('Expires: 0')
             ->set_content_type('application/json', 'utf-8')
-            ->set_output($data);
+            ->set_output($data)
+            ->_display();
+        exit;
     }
 }

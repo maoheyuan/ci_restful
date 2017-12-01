@@ -51,21 +51,22 @@ class Category extends MY_Controller {
 
 
 
-    public  function  validation($post=array(),$type="put"){
-        if(!$post["name"]){
+    public  function  validation($data=array(),$type="put"){
+
+        if(!$data["name"]){
             $this->response([
                 'status' => FALSE,
                 'message' => '分类不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
-        if(!$post["status"]){
+        if(!$data["status"]){
             $this->response([
                 'status' => FALSE,
                 'message' => '状态不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
 
-        if($type=="post"&&!$post["id"]){
+        if($type=="put"&&!$data["id"]){
             $this->response([
                 'status' => FALSE,
                 'message' => 'id不能为空'
@@ -76,6 +77,7 @@ class Category extends MY_Controller {
 
     public  function put(){
         $put=$this->input->input_stream();
+
         $this->validation($put,"put");
 
         if(!$this->category_model->update($put["id"],$put)){

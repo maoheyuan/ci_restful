@@ -83,7 +83,9 @@ class Category_model extends CI_Model {
         $data['name']   = $post['name'];
         $data["status"]=$post["status"];
         $data['edittime']  = time();
-        return $this->db->where('id', $id)->update('category', $data);
+        $result=$this->db->where('id', $id)->update('category', $data);
+       // echo $this->db->last_query();
+        return $result;
     }
 
     public  function  delete($id){
