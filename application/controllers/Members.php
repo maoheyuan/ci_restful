@@ -10,6 +10,7 @@ class Members extends MY_Controller {
 
 
     public function get($id=NULL){
+
         if ($id === NULL) {
             $keyword = $this->input->get('keyword');
             $page = $this->input->get('page');
@@ -49,63 +50,63 @@ class Members extends MY_Controller {
         }
     }
 
-    public  function  validation($post=array(),$type="put"){
-        if(!$post["username"]){
+    public  function  validation($data=array(),$type="put"){
+        if(!$data["username"]){
             $this->response([
                 'status' => FALSE,
                 'message' => '用户名不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
-        if(!$post["realname"]){
+        if(!$data["realname"]){
             $this->response([
                 'status' => FALSE,
                 'message' => '真实姓名不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
-        if(!$post["password"]){
+        if(!$data["password"]){
             $this->response([
                 'status' => FALSE,
                 'message' => '密码不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
-        if(!$post["rpassword"]){
+        if(!$data["rpassword"]){
             $this->response([
                 'status' => FALSE,
                 'message' => '确认密码不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
-        if($post["password"]!=$post["rpassword"]){
+        if($data["password"]!=$data["rpassword"]){
             $this->response([
                 'status' => FALSE,
                 'message' => '二次输入的密码不一致'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
 
-        if(!$post["mobile"]){
+        if(!$data["mobile"]){
             $this->response([
                 'status' => FALSE,
                 'message' => '手机号不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
-        if(!$post["status"]){
+        if(!$data["status"]){
             $this->response([
                 'status' => FALSE,
                 'message' => '状态不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
-        if(!$post["account"]){
+        if(!$data["account"]){
             $this->response([
                 'status' => FALSE,
                 'message' => '账号不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
-        if(!$post["address"]){
+        if(!$data["address"]){
             $this->response([
                 'status' => FALSE,
                 'message' => '地址不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
-        if($type=="post"&&!$post["id"]){
+        if($type=="post"&&!$data["id"]){
             $this->response([
                 'status' => FALSE,
                 'message' => 'id不能为空'
@@ -114,8 +115,24 @@ class Members extends MY_Controller {
     }
 
     public  function put(){
+
+        $put=$this->input->input_stream();
+        $this->validation($put,"put");
+        if(!$this->member_model->update($put["id"],$put)){
+            $this->response([
+                'status' => FALSE,
+                'message' => '修改失败'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+        else{
+            $this->response($put, MY_Controller::HTTP_OK); // OK (200)
+        }
+    }
+
+    public  function post(){
+
         $post=$this->input->post();
-        $this->validation($post,"put");
+        $this->validation($post);
         $post["id"]=$this->member_model->insert($post);
         if(!$post["id"]){
             $this->response([
@@ -127,21 +144,9 @@ class Members extends MY_Controller {
 
             $this->response($post, MY_Controller::HTTP_OK); // OK (200)
         }
-    }
 
-    public  function post(){
-        $post=$this->input->post();
-        $this->validation($post);
 
-        if(!$this->member_model->update($post["id"],$post)){
-            $this->response([
-                'status' => FALSE,
-                'message' => '修改失败'
-            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
-        }
-        else{
-            $this->response($post, MY_Controller::HTTP_OK); // OK (200)
-        }
+
     }
 
 

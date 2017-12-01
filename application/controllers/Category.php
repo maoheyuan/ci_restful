@@ -1,13 +1,12 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Category extends CI_Controller {
+class Category extends MY_Controller {
 
 
     public  function __construct(){
         parent::__construct();
         $this->load->model('category_model');
-        $this->load->helper('url');
     }
 
     public function get($id=NULL){
@@ -25,7 +24,7 @@ class Category extends CI_Controller {
             else {
                 $this->response([
                     'status' => FALSE,
-                    'message' => '会员列表不存在!'
+                    'message' => '分类列表不存在!'
                 ], MY_Controller::HTTP_NOT_FOUND); // NOT_FOUND (404)
             }
         }
@@ -42,7 +41,7 @@ class Category extends CI_Controller {
                 else {
                     $this->response([
                         'status' => FALSE,
-                        'message' => '会员不存在'
+                        'message' => '分类不存在'
                     ], MY_Controller::HTTP_NOT_FOUND); // NOT_FOUND (404)
                 }
             }
@@ -76,32 +75,32 @@ class Category extends CI_Controller {
 
 
     public  function put(){
-        $post=$this->input->post();
-        $this->validation($post,"put");
-        $post["id"]=$this->category_model->insert($post);
-        if(!$post["id"]){
-            $this->response([
-                'status' => FALSE,
-                'message' => '新增失败'
-            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
-        }
-        else{
-            $this->response($post, MY_Controller::HTTP_OK); // OK (200)
-        }
-    }
+        $put=$this->input->input_stream();
+        $this->validation($put,"put");
 
-    public  function post(){
-        $post=$this->input->post();
-        $this->validation($post);
-
-        if(!$this->category_model->update($post["id"],$post)){
+        if(!$this->category_model->update($put["id"],$put)){
             $this->response([
                 'status' => FALSE,
                 'message' => '修改失败'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
         else{
-            $this->response($post, MY_Controller::HTTP_OK); // OK (200)
+            $this->response($put, MY_Controller::HTTP_OK); // OK (200)
+        }
+    }
+
+    public  function post(){
+        $post=$this->input->post();
+        $this->validation($post);
+        $put["id"]=$this->category_model->insert($post);
+        if(!$put["id"]){
+            $this->response([
+                'status' => FALSE,
+                'message' => '新增失败'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+        else{
+            $this->response($put, MY_Controller::HTTP_OK); // OK (200)
         }
     }
 
