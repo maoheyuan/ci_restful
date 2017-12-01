@@ -6,8 +6,8 @@ class Order extends MY_Controller {
     public  function __construct(){
         parent::__construct();
         $this->load->model('order_model');
-        $this->load->model('ordergoods_model');
-        $this->load->helper('url');
+       // $this->load->model('ordergoods_model');
+        $this->load->database();
 
     }
 
@@ -26,12 +26,6 @@ class Order extends MY_Controller {
             $orders=$this->order_model->get_orders_by_keyword($keyword,"*",$page,$size);
             if ($orders) {
 
-                foreach($orders as $key=>$value){
-                    $order_goods=$this->ordergoods_model->get_list_by_ordersn($value["ordersn"]);
-                    if($order_goods){
-                        $orders[$key]["order_goods"]=$order_goods;
-                    }
-                }
                 $this->response($orders, MY_Controller::HTTP_OK); // OK (200)
             }
             else {
@@ -49,7 +43,6 @@ class Order extends MY_Controller {
             else{
                 $order=$this->order_model->get_info_by_id($id);
                 if (!empty($order)) {
-                    $orders["order_goods"]=$this->ordergoods_model->get_list_by_ordersn($order["ordersn"]);
                     $this->response($order, MY_Controller::HTTP_OK); // OK (200)
                 }
                 else {
@@ -110,23 +103,11 @@ class Order extends MY_Controller {
         }
     }
 
-    public  function  validation_order_goods($post=array(),$type="put"){
-        if(!$post["order_sn"]){
-            $this->response([
-                'status' => FALSE,
-                'message' => '订单编号不能为空'
-            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
-        }
+    public  function  validation_order_goods($post=array(),$type="post"){
         if(!$post["goods_name"]){
             $this->response([
                 'status' => FALSE,
                 'message' => '商品名称不能为空'
-            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
-        }
-        if(!$post["goods_sn"]){
-            $this->response([
-                'status' => FALSE,
-                'message' => '商品编号不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
         if(!$post["goods_num"]){
@@ -135,7 +116,12 @@ class Order extends MY_Controller {
                 'message' => '商品数量不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
-
+        if(!$post["goods_sn"]){
+            $this->response([
+                'status' => FALSE,
+                'message' => '商品编号不能为空'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
 
         if(!$post["sales_price"]){
             $this->response([
@@ -149,7 +135,7 @@ class Order extends MY_Controller {
                 'message' => '市场价不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
-        if($type=="post"&&!$post["id"]){
+        if($type=="put"&&!$post["id"]){
             $this->response([
                 'status' => FALSE,
                 'message' => 'id不能为空'
@@ -160,8 +146,12 @@ class Order extends MY_Controller {
     public  function put(){
 
         $put=$this->input->input_stream();
+
         $this->validation_order($put);
-        $order_put_status=$this->member_model->update($put["id"],$put);
+        foreach($put["order_goods"] as $key=>$value){
+            $this->validation_order_goods($value,"put");
+        }
+        $order_put_status=$this->order_model->update($put["id"],$put);
         if(!$order_put_status){
             $this->response([
                 'status' => FALSE,
@@ -169,23 +159,7 @@ class Order extends MY_Controller {
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
         else{
-            $put_order_goods_status=TRUE;
-            foreach($put["order_goods"] as $key=>$value){
-                $this->validation_order_goods($value,"put");
-                $post["id"]=$this->ordergoods_model->update($value["id"],$value);
-                if(!$post["id"]){
-                    $put_order_goods_status=FALSE;
-                }
-            }
-            if(!$put_order_goods_status){
-                $this->response([
-                    'status' => FALSE,
-                    'message' => '修改订单商品失败'
-                ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
-            }
-            else{
-                $this->response($post, MY_Controller::HTTP_OK); // OK (200)
-            }
+            $this->response($put, MY_Controller::HTTP_OK); // OK (200)
         }
     }
 
@@ -194,8 +168,12 @@ class Order extends MY_Controller {
     public  function post(){
 
         $post=$this->input->post();
-        $this->validation_order($post,"put");
-        $post["order_sn"]=$this->member_model->insert($post);
+        $this->validation_order($post);
+        foreach($post["order_goods"] as $key=>$value){
+            $this->validation_order_goods($value);
+        }
+        $post["id"]=$this->order_model->insert($post);
+
         if(!$post["id"]){
             $this->response([
                 'status' => FALSE,
@@ -203,24 +181,7 @@ class Order extends MY_Controller {
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
         else{
-            $post_order_goods_status=TRUE;
-            foreach($post["order_goods"] as $key=>$value){
-                $value["order_sn"]=$post["order_sn"];
-                $this->validation_order_goods($value,"put");
-                $put["id"]=$this->ordergoods_model->insert($post);
-                if(!$put["id"]){
-                    $post_order_goods_status=FALSE;
-                }
-            }
-            if(!$post_order_goods_status){
-                $this->response([
-                    'status' => FALSE,
-                    'message' => '新增订单商品失败'
-                ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
-            }
-            else{
-                $this->response($put, MY_Controller::HTTP_OK); // OK (200)
-            }
+            $this->response($post, MY_Controller::HTTP_OK); // OK (200)
         }
     }
 
@@ -237,35 +198,21 @@ class Order extends MY_Controller {
                 'message' => '参数不正确'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (400)
         }
-
         $order=$this->order_model->get_info_by_id($id);
-
         if(!$order){
             $this->response([
                 'status' => FALSE,
                 'message' => '订单不存在'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (400)
         }
-
-
-        if(!$this->member_model->delete($id)){
+        if(!$this->order_model->delete($id)){
             $this->response([
                 'status' => FALSE,
                 'message' => '订单删除失败'
             ],  MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
         else{
-
-            $delete_order_goods_status=$this->ordergoods_model->delete_by_order_sn($order["order_sn"]);
-            if(!$delete_order_goods_status){
-                $this->response([
-                    'status' => FALSE,
-                    'message' => '订单删除失败'
-                ],  MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
-            }
-            else{
-                $this->response(NULL, MY_Controller::HTTP_NO_CONTENT); // OK (200)
-            }
+            $this->response(NULL, MY_Controller::HTTP_NO_CONTENT); // OK (200)
         }
     }
 }

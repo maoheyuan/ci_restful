@@ -84,3 +84,10 @@ $route['goods/(:num)']['get'] = 'Goods/get/$1';
 $route['goods/(:num)']['delete'] = 'Goods/delete/$1';
 $route['goods']['put'] = 'Goods/put';
 $route['goods']['post'] = 'Goods/post';
+
+
+$route['order']['get'] = 'Order/get';
+$route['order/(:num)']['get'] = 'Order/get/$1';
+$route['order/(:num)']['delete'] = 'Order/delete/$1';
+$route['order']['put'] = 'Order/put';
+$route['order']['post'] = 'Order/post';
