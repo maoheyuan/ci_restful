@@ -10,7 +10,6 @@ class Members extends MY_Controller {
 
 
     public function get($id=NULL){
-
         if ($id === NULL) {
             $keyword = $this->input->get('keyword');
             $page = $this->input->get('page');
@@ -50,7 +49,7 @@ class Members extends MY_Controller {
         }
     }
 
-    public  function  validation($data=array(),$type="put"){
+    public  function  validation($data=array(),$type="post"){
         if(!$data["username"]){
             $this->response([
                 'status' => FALSE,
@@ -106,7 +105,7 @@ class Members extends MY_Controller {
                 'message' => '地址不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
-        if($type=="post"&&!$data["id"]){
+        if($type=="put"&&!$data["id"]){
             $this->response([
                 'status' => FALSE,
                 'message' => 'id不能为空'
