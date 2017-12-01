@@ -19,7 +19,7 @@ class Goods extends MY_Controller {
             if(!$size){
                 $size=10;
             }
-            $categorys=$this->goods_model->get_categorys_by_keyword($keyword,"*",$page,$size);
+            $categorys=$this->goods_model->get_goods_by_keyword($keyword,"*",$page,$size);
             if ($categorys) {
                 $this->response($categorys, MY_Controller::HTTP_OK); // OK (200)
             }
@@ -52,71 +52,71 @@ class Goods extends MY_Controller {
 
 
 
-    public  function  validation($post=array(),$type="put"){
-        if(!$post["name"]){
+    public  function  validation($data=array(),$type="put"){
+        if(!$data["name"]){
             $this->response([
                 'status' => FALSE,
                 'message' => '商品名称不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
-        if(!$post["discription"]){
+        if(!$data["discription"]){
             $this->response([
                 'status' => FALSE,
                 'message' => '简介不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
-        if(!$post["content"]){
+        if(!$data["content"]){
             $this->response([
                 'status' => FALSE,
                 'message' => '内容不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
-        if(!$post["market_price"]){
+        if(!$data["market_price"]){
             $this->response([
                 'status' => FALSE,
                 'message' => '市场价不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
-        if(!$post["sales_price"]){
+        if(!$data["sales_price"]){
             $this->response([
                 'status' => FALSE,
                 'message' => '销售价不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
-        if(!$post["sales_price"]){
+        if(!$data["sales_price"]){
             $this->response([
                 'status' => FALSE,
                 'message' => '销售价不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
 
-        if(!$post["stock"]){
+        if(!$data["stock"]){
             $this->response([
                 'status' => FALSE,
                 'message' => '库存不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
 
-        if(!$post["status"]){
+        if(!$data["status"]){
             $this->response([
                 'status' => FALSE,
                 'message' => '状态不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
-
-        if($type=="post"&&!$post["id"]){
+        if(!$data["image"]){
+            $this->response([
+                'status' => FALSE,
+                'message' => '图片不能为空'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+        if($type=="put"&&!$data["id"]){
             $this->response([
                 'status' => FALSE,
                 'message' => 'id不能为空'
             ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
         }
 
-        if($type=="post"&&!$post["image"]){
-            $this->response([
-                'status' => FALSE,
-                'message' => '图片不能为空'
-            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
-        }
+
     }
 
 
@@ -124,8 +124,6 @@ class Goods extends MY_Controller {
 
         $put=$this->input->input_stream();
         $this->validation($put,"put");
-
-
         if(!$this->goods_model->update($put["id"],$put)){
             $this->response([
                 'status' => FALSE,
@@ -154,6 +152,7 @@ class Goods extends MY_Controller {
 
 
     public  function delete($id=NULL){
+
         if($id==NULL){
             $this->response(NULL, MY_Controller::HTTP_BAD_REQUEST); // BAD_REQUEST (400)
         }
