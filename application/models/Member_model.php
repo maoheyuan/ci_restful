@@ -7,9 +7,10 @@ class Member_model extends CI_Model {
         $this->load->database();
     }
 
+
     public function get_members_by_keyword($keyword="",$field='*',$offset=0,$limit=10){
         if($keyword){
-           $this->db->like('username', $keyword, 'both');
+           $this->db->like('realname', $keyword, 'both');
            $this->db->or_like('mobile',$keyword,'both');
            $this->db->or_like('address',$keyword,'both');
         }

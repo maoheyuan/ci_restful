@@ -8,66 +8,124 @@ class Category extends CI_Controller {
         parent::__construct();
         $this->load->model('category_model');
         $this->load->helper('url');
-        $this->load->model('logs_model');
     }
 
-
-
-
-    public function index(){
-        $keyword = $this->input->get('keyword');
-        $page = $this->input->get('per_page');
-        $categorys=$this->category_model->get_categorys_by_keyword($keyword,"*",$page);
-        $count=$this->category_model->count($keyword);
-        $this->load->library('page');
-        $data["page"]=$this->page->getPage($count,10,"/Category/index");
-        $data["categorys"]=$categorys;
-        $this->layout->view('Category/index',$data);
-
-    }
-    public  function add(){
-        $this->load->library('form_validation');
-        $this->form_validation->set_rules('name' ,'', 'required',array('required' => '分类不能为空'));
-        $this->form_validation->set_rules('status'   ,'', 'required',array('required' => '状态不能为空'));
-        if ($this->form_validation->run() == FALSE) {
-            $this->layout->view("Category/add");
-        }
-        else {
-            $post=$this->input->post();
-            $post["id"]=$this->category_model->insert($post);
-            $this->logs_model->insert($post);
-            redirect('/Category/index');
-        }
-    }
-    public  function edit(){
-
-        $this->load->library('form_validation');
-        $this->form_validation->set_rules('name' ,'', 'required',array('required' => '分类不能为空'));
-        $this->form_validation->set_rules('status'   ,'', 'required',array('required' => '状态不能为空'));
-        $id=$this->input->get("id");
-        $category=$this->category_model->get_info_by_id($id);
-        $data["category"]=$category;
-        $post=$this->input->post();
-        if ($this->form_validation->run() == FALSE ) {
-
-            if($this->input->method()=="post"){
-                $data["category"]=$post;
+    public function get($id=NULL){
+        if ($id === NULL) {
+            $keyword = $this->input->get('keyword');
+            $page = $this->input->get('page');
+            $size = $this->input->get('size');
+            if(!$size){
+                $size=10;
             }
-            $this->layout->view("Category/edit",$data);
+            $categorys=$this->category_model->get_categorys_by_keyword($keyword,"*",$page,$size);
+            if ($categorys) {
+                $this->response($categorys, MY_Controller::HTTP_OK); // OK (200)
+            }
+            else {
+                $this->response([
+                    'status' => FALSE,
+                    'message' => '会员列表不存在!'
+                ], MY_Controller::HTTP_NOT_FOUND); // NOT_FOUND (404)
+            }
         }
-        else {
-
-            $this->category_model->update($id,$post);
-            $this->logs_model->insert($post);
-            redirect("/Category/index?");
+        else{
+            $id = (int) $id;
+            if ($id <= 0) {
+                $this->response(NULL, MY_Controller::HTTP_BAD_REQUEST); // BAD_REQUEST (400)
+            }
+            else{
+                $category=$this->category_model->get_info_by_id($id);
+                if (!empty($category)) {
+                    $this->response($category, MY_Controller::HTTP_OK); // OK (200)
+                }
+                else {
+                    $this->response([
+                        'status' => FALSE,
+                        'message' => '会员不存在'
+                    ], MY_Controller::HTTP_NOT_FOUND); // NOT_FOUND (404)
+                }
+            }
         }
     }
 
-    public  function  delete(){
-        $id = $this->input->get('id');
-        $this->category_model->delete($id);
-        $this->logs_model->insert(array("id"=>$id));
-        redirect("/Category/index");
+
+
+
+    public  function  validation($post=array(),$type="put"){
+        if(!$post["name"]){
+            $this->response([
+                'status' => FALSE,
+                'message' => '分类不能为空'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+        if(!$post["status"]){
+            $this->response([
+                'status' => FALSE,
+                'message' => '状态不能为空'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+
+        if($type=="post"&&!$post["id"]){
+            $this->response([
+                'status' => FALSE,
+                'message' => 'id不能为空'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+    }
+
+
+    public  function put(){
+        $post=$this->input->post();
+        $this->validation($post,"put");
+        $post["id"]=$this->category_model->insert($post);
+        if(!$post["id"]){
+            $this->response([
+                'status' => FALSE,
+                'message' => '新增失败'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+        else{
+            $this->response($post, MY_Controller::HTTP_OK); // OK (200)
+        }
+    }
+
+    public  function post(){
+        $post=$this->input->post();
+        $this->validation($post);
+
+        if(!$this->category_model->update($post["id"],$post)){
+            $this->response([
+                'status' => FALSE,
+                'message' => '修改失败'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+        else{
+            $this->response($post, MY_Controller::HTTP_OK); // OK (200)
+        }
+    }
+
+
+    public  function delete($id=NULL){
+        if($id==NULL){
+            $this->response(NULL, MY_Controller::HTTP_BAD_REQUEST); // BAD_REQUEST (400)
+        }
+        $id = (int) $id;
+        if ($id <= 0) {
+            $this->response([
+                'status' => FALSE,
+                'message' => '参数不正确'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (400)
+        }
+        if(!$this->category_model->delete($id)){
+            $this->response([
+                'status' => FALSE,
+                'message' => '删除失败'
+            ],  MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+        else{
+            $this->response(NULL, MY_Controller::HTTP_NO_CONTENT); // OK (200)
+        }
     }
 
 }

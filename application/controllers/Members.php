@@ -11,8 +11,13 @@ class Members extends MY_Controller {
 
     public function get($id=NULL){
         if ($id === NULL) {
-            $page = $this->input->get('per_page');
-            $members=$this->member_model->get_members_by_keyword("","*",$page);
+            $keyword = $this->input->get('keyword');
+            $page = $this->input->get('page');
+            $size = $this->input->get('size');
+            if(!$size){
+                $size=10;
+            }
+            $members=$this->member_model->get_members_by_keyword($keyword,"*",$page,$size);
             $data["members"]=$members;
             if ($members) {
                 $this->response($members, MY_Controller::HTTP_OK); // OK (200)
@@ -110,7 +115,7 @@ class Members extends MY_Controller {
 
     public  function put(){
         $post=$this->input->post();
-        $this->validation($post);
+        $this->validation($post,"put");
         $post["id"]=$this->member_model->insert($post);
         if(!$post["id"]){
             $this->response([
@@ -161,5 +166,4 @@ class Members extends MY_Controller {
             $this->response(NULL, MY_Controller::HTTP_NO_CONTENT); // OK (200)
         }
     }
-
 }

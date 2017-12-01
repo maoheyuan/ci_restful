@@ -7,67 +7,172 @@ class Goods extends MY_Controller {
         parent::__construct();
         $this->load->model('goods_model');
         $this->load->helper('url');
-        $this->load->model('logs_model');
-    }
-
-
-
-
-    public function index(){
-
-        $keyword = $this->input->get('keyword');
-        $page = $this->input->get('per_page');
-        $goods=$this->goods_model->get_goods_by_keyword($keyword,"*",$page);
-        $count=$this->goods_model->count($keyword);
-        $this->load->library('page');
-        $data["page"]=$this->page->getPage($count,10,"/Goods/index");
-        $data["goods"]=$goods;
-        $this->layout->view('goods/index',$data);
 
     }
 
 
-    public  function add(){
-        $this->load->library('form_validation');
-        $this->form_validation->set_rules('name' ,'', 'required',array('required' => '商品名称不能为空'));
-        $this->form_validation->set_rules('discription','', 'required',array('required' => '简介不能为空'));
-        $this->form_validation->set_rules('content'   ,'', 'required',array('required' => '内容不能为空'));
-        $this->form_validation->set_rules('market_price'   ,'', 'required',array('required' => '市场价不能为空'));
-        $this->form_validation->set_rules('sales_price'  ,'', 'required',array('required' => '销售价不能为空'));
-        $this->form_validation->set_rules('stock'  ,'', 'required',array('required' => '库存不能为空'));
-        $this->form_validation->set_rules('status','', 'required',array('required' => '状态不能为空'));
-
-        if ($this->form_validation->run() == FALSE) {
-            if($this->input->method()=="post"){
-                if($_FILES["image"]['name']==""){
-                    $this->form_validation->set_file_error( "image",'图片不能为空');
-                }
+    public function get($id=NULL){
+        if ($id === NULL) {
+            $keyword = $this->input->get('keyword');
+            $page = $this->input->get('page');
+            $size = $this->input->get('size');
+            if(!$size){
+                $size=10;
             }
-            $this->layout->view("goods/add");
+            $categorys=$this->goods_model->get_categorys_by_keyword($keyword,"*",$page,$size);
+            if ($categorys) {
+                $this->response($categorys, MY_Controller::HTTP_OK); // OK (200)
+            }
+            else {
+                $this->response([
+                    'status' => FALSE,
+                    'message' => '会员列表不存在!'
+                ], MY_Controller::HTTP_NOT_FOUND); // NOT_FOUND (404)
+            }
         }
-        else {
-            $image_file_name=$this->do_upload("image");
-            if($image_file_name!=false){
-                $post=$this->input->post();
-                $post["image"]=$image_file_name;
-                $result=$this->goods_model->insert($post);
-
-                if($result==false){
-                    $this->form_validation->set_file_error( "error_tip",'商品新增失败');
-                    $this->layout->view("goods/add");
-                }else{
-                    $post["id"]=$result;
-                    $this->logs_model->insert($post);
-                    redirect('/Goods/index');
-                }
+        else{
+            $id = (int) $id;
+            if ($id <= 0) {
+                $this->response(NULL, MY_Controller::HTTP_BAD_REQUEST); // BAD_REQUEST (400)
             }
             else{
-                $this->form_validation->set_file_error( "error_tip",'图片保存失败');
-                $this->layout->view("goods/add");
+                $category=$this->goods_model->get_info_by_id($id);
+                if (!empty($category)) {
+                    $this->response($category, MY_Controller::HTTP_OK); // OK (200)
+                }
+                else {
+                    $this->response([
+                        'status' => FALSE,
+                        'message' => '会员不存在'
+                    ], MY_Controller::HTTP_NOT_FOUND); // NOT_FOUND (404)
+                }
             }
         }
     }
 
+
+
+    public  function  validation($post=array(),$type="put"){
+        if(!$post["name"]){
+            $this->response([
+                'status' => FALSE,
+                'message' => '商品名称不能为空'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+        if(!$post["discription"]){
+            $this->response([
+                'status' => FALSE,
+                'message' => '简介不能为空'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+        if(!$post["content"]){
+            $this->response([
+                'status' => FALSE,
+                'message' => '内容不能为空'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+        if(!$post["market_price"]){
+            $this->response([
+                'status' => FALSE,
+                'message' => '市场价不能为空'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+        if(!$post["sales_price"]){
+            $this->response([
+                'status' => FALSE,
+                'message' => '销售价不能为空'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+        if(!$post["sales_price"]){
+            $this->response([
+                'status' => FALSE,
+                'message' => '销售价不能为空'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+
+        if(!$post["stock"]){
+            $this->response([
+                'status' => FALSE,
+                'message' => '库存不能为空'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+
+        if(!$post["status"]){
+            $this->response([
+                'status' => FALSE,
+                'message' => '状态不能为空'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+
+        if($type=="post"&&!$post["id"]){
+            $this->response([
+                'status' => FALSE,
+                'message' => 'id不能为空'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+
+        if($type=="post"&&!$post["image"]){
+            $this->response([
+                'status' => FALSE,
+                'message' => '图片不能为空'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+    }
+
+
+    public  function put(){
+
+        $post=$this->input->post();
+        $this->validation($post,"put");
+        $post["id"]=$this->goods_model->insert($post);
+        if(!$post["id"]){
+            $this->response([
+                'status' => FALSE,
+                'message' => '新增失败'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+        else{
+            $this->response($post, MY_Controller::HTTP_OK); // OK (200)
+        }
+    }
+
+    public  function post(){
+        $post=$this->input->post();
+        $this->validation($post);
+
+        if(!$this->goods_model->update($post["id"],$post)){
+            $this->response([
+                'status' => FALSE,
+                'message' => '修改失败'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+        else{
+            $this->response($post, MY_Controller::HTTP_OK); // OK (200)
+        }
+    }
+
+
+    public  function delete($id=NULL){
+        if($id==NULL){
+            $this->response(NULL, MY_Controller::HTTP_BAD_REQUEST); // BAD_REQUEST (400)
+        }
+        $id = (int) $id;
+        if ($id <= 0) {
+            $this->response([
+                'status' => FALSE,
+                'message' => '参数不正确'
+            ], MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (400)
+        }
+        if(!$this->goods_model->delete($id)){
+            $this->response([
+                'status' => FALSE,
+                'message' => '删除失败'
+            ],  MY_Controller::HTTP_BAD_REQUEST); // NOT_FOUND (404)
+        }
+        else{
+            $this->response(NULL, MY_Controller::HTTP_NO_CONTENT); // OK (200)
+        }
+    }
 
     protected  function do_upload($input_name){
         $config['upload_path']      = './upload/image/goods';
@@ -84,74 +189,5 @@ class Goods extends MY_Controller {
             return $data["file_name"];
         }
     }
-
-
-    public  function edit(){
-        $this->load->library('form_validation');
-        $this->form_validation->set_rules('name' ,'', 'required',array('required' => '商品名称不能为空'));
-        $this->form_validation->set_rules('discription','', 'required',array('required' => '简介不能为空'));
-        $this->form_validation->set_rules('content'   ,'', 'required',array('required' => '内容不能为空'));
-        $this->form_validation->set_rules('market_price'   ,'', 'required',array('required' => '市场价不能为空'));
-        $this->form_validation->set_rules('sales_price'  ,'', 'required',array('required' => '销售价不能为空'));
-        $this->form_validation->set_rules('stock'  ,'', 'required',array('required' => '库存不能为空'));
-        $this->form_validation->set_rules('status','', 'required',array('required' => '状态不能为空'));
-        $id=$this->input->get("id");
-        $goods=$this->goods_model->get_info_by_id($id);
-        $data["goods"]=$goods;
-        $post=$this->input->post();
-        if ($this->form_validation->run() == FALSE) {
-            if($this->input->method()=="post"){
-                $data["goods"]=$post;
-                $data["goods"]["image"]=$goods["image"];
-            }
-            $this->layout->view("goods/edit",$data);
-        }
-        else {
-            $post=$this->input->post();
-            $data["goods"]=$post;
-            $edit_status="update_data_sucess";
-            if($_FILES["image"]['name']==""){
-                $post["image"]=$goods["image"];
-                $result=$this->goods_model->update($id,$post);
-                if($result==false){
-                    $edit_status="update_data_fail";
-                }
-            }else{
-                $image_file_name=$this->do_upload("image");
-                if($image_file_name==false){
-                    $edit_status="update_image_fail";
-                }
-                else{
-                    $post["image"]=$image_file_name;
-                    $result=$this->goods_model->update($id,$post);
-                    if($result==false){
-                        $edit_status="update_data_fail";
-                    }
-                }
-            }
-            if($edit_status=="update_data_fail"||$edit_status=="update_image_fail"){
-                if($edit_status=="update_data_fail"){
-                    $this->form_validation->set_file_error( "error_tip",'商品修改失败');
-                }
-                if($edit_status=="update_image_fail"){
-                    $this->form_validation->set_file_error( "error_tip",'图片保存失败');
-                }
-                $this->layout->view("goods/edit",$data);
-            }
-            else{
-                $this->logs_model->insert($post);
-                redirect('/Goods/index');
-            }
-        }
-    }
-
-    public  function  delete(){
-        $id = $this->input->get('id');
-        $this->goods_model->delete($id);
-        $this->logs_model->insert(array("id"=>$id));
-        redirect("/Goods/index");
-    }
-
-
 
 }

@@ -65,5 +65,22 @@ $route['members/index']['POST'] = 'Members/post';*/
 $route['members']['get'] = 'Members/get';
 $route['members/(:num)']['get'] = 'Members/get/$1';
 $route['members/(:num)']['delete'] = 'Members/delete/$1';
-$route['members']['put'] = 'Members/create';
-$route['members']['post'] = 'Members/update';
+$route['members']['put'] = 'Members/put';
+$route['members']['post'] = 'Members/post';
+
+
+
+$route['category']['get'] = 'Category/get';
+$route['category/(:num)']['get'] = 'Category/get/$1';
+$route['category/(:num)']['delete'] = 'Category/delete/$1';
+$route['category']['put'] = 'Category/put';
+$route['category']['post'] = 'Category/post';
+
+
+
+
+$route['goods']['get'] = 'Goods/get';
+$route['goods/(:num)']['get'] = 'Goods/get/$1';
+$route['goods/(:num)']['delete'] = 'Goods/delete/$1';
+$route['goods']['put'] = 'Goods/put';
+$route['goods']['post'] = 'Goods/post';
