@@ -6,19 +6,14 @@ class Category extends CI_Controller {
 
     public  function __construct(){
         parent::__construct();
-        $this->load->model('category_model');
-        $this->load->helper('url');
+        $this->load->model('cart_model');
     }
 
     public function get($id=NULL){
         if ($id === NULL) {
-            $keyword = $this->input->get('keyword');
-            $page = $this->input->get('page');
-            $size = $this->input->get('size');
-            if(!$size){
-                $size=10;
-            }
-            $categorys=$this->category_model->get_categorys_by_keyword($keyword,"*",$page,$size);
+
+            $uid=$this->get_uid();
+            $categorys=$this->cart_model->get_all_by_uid($uid);
             if ($categorys) {
                 $this->response($categorys, MY_Controller::HTTP_OK); // OK (200)
             }
