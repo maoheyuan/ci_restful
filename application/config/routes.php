@@ -103,3 +103,6 @@ $route['address/(:num)']['get'] = 'Address/get/$1';
 $route['address/(:num)']['delete'] = 'Address/delete/$1';
 $route['address']['put'] = 'Address/put';
 $route['address']['post'] = 'Address/post';
+
+
+$route['common/login']['post'] = 'Common/login';
