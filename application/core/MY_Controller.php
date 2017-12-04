@@ -67,9 +67,7 @@ class MY_Controller extends CI_Controller {
 
     public  function __construct(){
         parent::__construct();
-        $this->load->library('Format', NULL, 'dataFormat');
-        $this->load->library('ftp');
-
+        $this->load->library('session');
     }
 
     public function response($data = NULL,$http_code = NULL){
@@ -89,5 +87,13 @@ class MY_Controller extends CI_Controller {
             ->set_output($data)
             ->_display();
         exit;
+    }
+
+
+    public  function  get_uid(){
+        $session_id=$this->input->get("token");
+        session_id ($session_id);
+        $admin=$this->session->userdata('admin');
+        return $admin["id"];
     }
 }

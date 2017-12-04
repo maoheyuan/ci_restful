@@ -13,7 +13,6 @@ class Cart_model extends CI_Model {
         $this->db->order_by('id', 'DESC');
         $query =$this->db->get('cart');
         //echo $this->db->last_query();
-
         $list=$query->result_array();
         foreach($list as $key=>$value){
 
@@ -40,13 +39,17 @@ class Cart_model extends CI_Model {
         return $this->db->count_all_results();
     }
 
-    public  function  get_info_by_id($id){
-        if(!$id){
+    public  function  get_info_by_id_and_uid($id,$uid){
+        if(!$id||!$uid){
             return false;
         }
-        $query=$this->db->where('id',$id)->from('cart')->limit(1)->get();
+        $map=array();
+        $map["id"]=$id;
+        $map["uid"]=$uid;
+        $query=$this->db->where($map)->from('cart')->limit(1)->get();
         return  $query->row_array();
     }
+
 
     public function insert($post=array()){
         $data=array();
@@ -59,13 +62,16 @@ class Cart_model extends CI_Model {
         return  $this->db->insert_id();
     }
 
+
     public function update($id,$post=array()){
         $data=array();
-        $data['uid']   = $post['uid'];
         $data['gid']   = $post['gid'];
         $data['name']  = $post['name'];
         $data['number']   = $post['number'];
-        return $this->db->where('id', $id)->update('cart', $data);
+        $map=array();
+        $map["id"]=$post["id"];
+        $map["uid"]=$post["uid"];
+        return $this->db->where($map)->update('cart', $data);
     }
 
     public  function  delete($id){
