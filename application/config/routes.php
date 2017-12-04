@@ -97,3 +97,9 @@ $route['cart']['get'] = 'Cart/get';
 $route['cart/(:num)']['delete'] = 'Cart/delete/$1';
 $route['cart']['put'] = 'Cart/put';
 $route['cart']['post'] = 'Cart/post';
+
+$route['address']['get'] = 'Address/get';
+$route['address/(:num)']['get'] = 'Address/get/$1';
+$route['address/(:num)']['delete'] = 'Address/delete/$1';
+$route['address']['put'] = 'Address/put';
+$route['address']['post'] = 'Address/post';
